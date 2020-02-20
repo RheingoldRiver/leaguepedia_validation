@@ -27,7 +27,6 @@ class PickBanValidator(object):
 			disablelimitreport=1,
 			wrapoutputclass=''
 		)
-		print(query_result)
 		result = query_result['parse']['text']['*']
 		result = result.replace('<p>', '').replace('\n</p>', '')
 		result_tbl = result.split(',')
