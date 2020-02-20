@@ -41,8 +41,8 @@ class PickBanValidator(object):
 	def has_role_error(self):
 		values = self.get_values_to_check(ROLE_ARGS_BLUE)
 		query_text = '{{#invoke:PrintParsedText|unordered|type=role|' + '|'.join(values) + '}}'
-		if not self.run_and_evaluate_query(query_text):
-			return False
+		if self.run_and_evaluate_query(query_text):
+			return True
 		values = self.get_values_to_check(ROLE_ARGS_RED)
 		query_text = '{{#invoke:PrintParsedText|unordered|type=role|' + '|'.join(values) + '}}'
 		return self.run_and_evaluate_query(query_text)
