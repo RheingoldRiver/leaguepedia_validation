@@ -3,7 +3,7 @@ CHAMPION_ARGS = [ 'blueban1', 'blueban2', 'blueban3', 'blueban4', 'blueban5', 'r
 ROLE_ARGS_BLUE = [ 'bluerole1', 'bluerole2', 'bluerole3', 'bluerole4', 'bluerole5' ]
 ROLE_ARGS_RED = [ 'red_role1', 'red_role2', 'red_role3', 'red_role4', 'red_role5' ]
 
-pb_exceptions = ['', 'unknown', 'none', 'missing data', 'loss of ban']
+VALUES_TO_IGNORE = ['', 'unknown', 'none', 'missing data', 'loss of ban']
 
 
 class PickBanValidator(object):
@@ -27,10 +27,11 @@ class PickBanValidator(object):
 			disablelimitreport=1,
 			wrapoutputclass=''
 		)
+		print(query_result)
 		result = query_result['parse']['text']['*']
 		result = result.replace('<p>', '').replace('\n</p>', '')
 		result_tbl = result.split(',')
-		result_parsed = [x for x in result_tbl if x.lower() not in pb_exceptions]
+		result_parsed = [x for x in result_tbl if x.lower() not in VALUES_TO_IGNORE]
 		return len(result_parsed) != len(set(result_parsed))
 	
 	def has_champion_error(self):
