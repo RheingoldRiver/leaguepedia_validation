@@ -11,14 +11,28 @@ class PickBanValidator(object):
 		self.site = site
 		self.template = template
 	
-	def get_values_to_check(self, arg_list):
+	def has_champion_error(self):
+		values = self._get_values_to_check(CHAMPION_ARGS)
+		query_text = '{{#invoke:PrintParsedText|unordered|type=champion|' + '|'.join(values) + '}}'
+		return self._run_and_evaluate_query(query_text)
+	
+	def has_role_error(self):
+		values = self._get_values_to_check(ROLE_ARGS_BLUE)
+		query_text = '{{#invoke:PrintParsedText|unordered|type=role|' + '|'.join(values) + '}}'
+		if self._run_and_evaluate_query(query_text):
+			return True
+		values = self._get_values_to_check(ROLE_ARGS_RED)
+		query_text = '{{#invoke:PrintParsedText|unordered|type=role|' + '|'.join(values) + '}}'
+		return self._run_and_evaluate_query(query_text)
+	
+	def _get_values_to_check(self, arg_list):
 		values = []
 		for arg in arg_list:
 			if self.template.has(arg):
 				values.append(self.template.get(arg).value.strip())
 		return values
 	
-	def run_and_evaluate_query(self, query_text):
+	def _run_and_evaluate_query(self, query_text):
 		query_result = self.site.api(
 			'parse',
 			format='json',
@@ -32,17 +46,3 @@ class PickBanValidator(object):
 		result_tbl = result.split(',')
 		result_parsed = [x for x in result_tbl if x.lower() not in VALUES_TO_IGNORE]
 		return len(result_parsed) != len(set(result_parsed))
-	
-	def has_champion_error(self):
-		values = self.get_values_to_check(CHAMPION_ARGS)
-		query_text = '{{#invoke:PrintParsedText|unordered|type=champion|' + '|'.join(values) + '}}'
-		return self.run_and_evaluate_query(query_text)
-	
-	def has_role_error(self):
-		values = self.get_values_to_check(ROLE_ARGS_BLUE)
-		query_text = '{{#invoke:PrintParsedText|unordered|type=role|' + '|'.join(values) + '}}'
-		if self.run_and_evaluate_query(query_text):
-			return True
-		values = self.get_values_to_check(ROLE_ARGS_RED)
-		query_text = '{{#invoke:PrintParsedText|unordered|type=role|' + '|'.join(values) + '}}'
-		return self.run_and_evaluate_query(query_text)
