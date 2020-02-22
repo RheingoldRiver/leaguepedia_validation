@@ -23,19 +23,16 @@ class PickBanValidator(SingleValidator):
 	
 	def _has_champion_error(self, template):
 		values = self._get_values_to_check(CHAMPION_ARGS, template)
-		query_text = '{{#invoke:PrintParsedText|unordered|type=champion|' + '|'.join(values) + '}}'
-		if self._run_and_evaluate_query(query_text):
+		if self._check_for_duplicates(values, 'Champion', length='link'):
 			return ValidationError(code='ChampionError')
 		return None
 	
 	def _has_role_error(self, template):
 		values = self._get_values_to_check(ROLE_ARGS_BLUE, template)
-		query_text = '{{#invoke:PrintParsedText|unordered|type=role|' + '|'.join(values) + '}}'
-		if self._run_and_evaluate_query(query_text):
+		if self._check_for_duplicates(values, 'Role', length='role'):
 			return ValidationError(code='RoleError')
 		values = self._get_values_to_check(ROLE_ARGS_RED, template)
-		query_text = '{{#invoke:PrintParsedText|unordered|type=role|' + '|'.join(values) + '}}'
-		if self._run_and_evaluate_query(query_text):
+		if self._check_for_duplicates(values, 'Role', length='role'):
 			return ValidationError(code='RoleError')
 		return None
 	
@@ -47,17 +44,11 @@ class PickBanValidator(SingleValidator):
 				values.append(template.get(arg).value.strip())
 		return values
 	
-	def _run_and_evaluate_query(self, query_text):
-		query_result = self.site.api(
-			'parse',
-			format='json',
-			text=query_text,
-			prop='text',
-			disablelimitreport=1,
-			wrapoutputclass=''
-		)
-		result = query_result['parse']['text']['*']
-		result = result.replace('<p>', '').replace('\n</p>', '')
-		result_tbl = result.split(',')
-		result_parsed = [x for x in result_tbl if x.lower() not in VALUES_TO_IGNORE]
-		return len(result_parsed) != len(set(result_parsed))
+	def _check_for_duplicates(self, values, file, length="link"):
+		already_seen = []
+		for value in values:
+			new = self.cache.get_value(file, value, length)
+			if new in already_seen:
+				return True
+			already_seen.append(new)
+		return False

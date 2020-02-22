@@ -14,7 +14,8 @@ class Cache(object):
             prop='wikitext',
 			text='{{JsonEncode|%s}}' % filename
 		)
-		self.cache[filename] = json.load(result['expandtemplates']['wikitext'])
+		self.cache[filename] = json.loads(result['expandtemplates']['wikitext'])
+		return self.cache[filename]
 	
 	def get_value(self, filename, key, length):
 		"""
@@ -28,6 +29,6 @@ class Cache(object):
 		file = self.get_file(filename)
 		if key not in file:
 			return None
-		if type(file[key]) != 'str':
+		if not isinstance(file[key], str):
 			return file[key][length]
 		return file[file[key]][length]
