@@ -1,9 +1,12 @@
 from mwparserfromhell.nodes import Template
-from mwclient import Site
+from river_mwclient import EsportsSite
+from .cache_manager import Cache
 
 class SingleValidator(object):
-	def __init__(self, site: Site, cache):
+	def __init__(self, site: EsportsSite, cache:Cache=None):
 		self.site = site
+		if not cache:
+			self.cache = Cache(site)
 		self.cache = cache
 		self.recognized_templates = []
 	

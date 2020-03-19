@@ -1,12 +1,12 @@
-from mwclient import Site
+from river_mwclient import EsportsSite
 import json
 
 class Cache(object):
-	def __init__(self, site: Site):
+	def __init__(self, site: EsportsSite):
 		self.cache = {}
 		self.site = site
 	
-	def get_file(self, filename):
+	def get_json_lookup(self, filename):
 		if filename in self.cache:
 			return self.cache[filename]
 		result = self.site.api(
@@ -17,7 +17,7 @@ class Cache(object):
 		self.cache[filename] = json.loads(result['expandtemplates']['wikitext'])
 		return self.cache[filename]
 	
-	def get_value(self, filename, key, length):
+	def get_value_from_lookup_json(self, filename, key, length):
 		"""
 		Returrns the length of the lookup of a key requested from the filename requested. Assumes the file has
 		the same structure as the -names modules on Leaguepedia.
@@ -26,9 +26,22 @@ class Cache(object):
 		:param length: The length of value to return, e.g. "long" or "link"
 		:return: Correct lookup value provided, or None if it's not found
 		"""
-		file = self.get_file(filename)
+		file = self.get_json_lookup(filename)
 		if key not in file:
 			return None
 		if not isinstance(file[key], str):
 			return file[key][length]
 		return file[file[key]][length]
+	
+	def get_cargo_query(self, key, **kwargs):
+		"""
+		Cache results of a cargo query and return if needed
+		:param key: A key to save this query as to look it up later without rerunning the query
+		:param kwargs: Parameters for a cargoquery api call
+		:return:
+		"""
+		if self.cache[key]:
+			return self.cache[key]
+		result = self.site.cargoquery(**kwargs)
+		self.cache[key] = result
+		return result

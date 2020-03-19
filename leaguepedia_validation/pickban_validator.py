@@ -1,6 +1,7 @@
-from .validation_result import ValidationResponse, ValidationError
 from mwparserfromhell.nodes import Template
+from .validation_result import ValidationResponse, ValidationError
 from .single_validator import SingleValidator
+from .cache_manager import Cache
 
 CHAMPION_ARGS = [ 'blueban1', 'blueban2', 'blueban3', 'blueban4', 'blueban5', 'red_ban1', 'red_ban2', 'red_ban3', 'red_ban4', 'red_ban5', 'bluepick1', 'bluepick2', 'bluepick3', 'bluepick4', 'bluepick5', 'red_pick1', 'red_pick2', 'red_pick3', 'red_pick4', 'red_pick5' ]
 
@@ -11,8 +12,10 @@ VALUES_TO_IGNORE = ['', 'unknown', 'none', 'missing data', 'loss of ban']
 
 
 class PickBanValidator(SingleValidator):
-	def __init__(self, site, cache):
-		super().__init__(site, cache)
+	def __init__(self, site, cache:Cache=None):
+		# If this is being called as part of a composite Validator, cache is guaranteed to be defined
+		# However, if this is being called on its own we might to let it have its own cache
+		super().__init__(site, cache=cache)
 		self.recognized_templates = ['PicksAndBansS7', 'PicksAndBans']
 	
 	def validate(self, template: Template):
@@ -47,7 +50,7 @@ class PickBanValidator(SingleValidator):
 	def _check_for_duplicates(self, values, file, length="link"):
 		already_seen = []
 		for value in values:
-			new = self.cache.get_value(file, value, length)
+			new = self.cache.get_value_from_lookup_json(file, value, length)
 			if new in already_seen:
 				return True
 			already_seen.append(new)
